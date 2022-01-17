@@ -18,7 +18,7 @@ The project is a fork of the original repo found under https://github.com/bulldo
   * Initial version:)
 
 
-##Copyright and License
+## Copyright and License
 Copyright 2012 Leansoft Technology <51startup@sina.com>
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this work except in compliance with the License. You may obtain a copy of the License in the LICENSE file, or at:

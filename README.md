@@ -4,7 +4,7 @@ A big, fast and persistent queue based on memory mapped file.
 
 For more information see https://github.com/bulldog2011/bigqueue
 
-# About this project
+# About this project/fork
 The project is a fork of the original repo found under https://github.com/bulldog2011/bigqueue. The intent behind the fork was to make the library work with JDK version 11 for use in homebrew projects.
 
 ## Version History

@@ -89,10 +89,6 @@ public class MappedPageImpl implements IMappedPage, Closeable {
 	 * Helper class allowing to clean direct buffers.
 	 */
 	private static class Cleaner {
-		//public static final boolean CLEAN_SUPPORTED;
-		//private static final Method directBufferCleaner;
-		//private static final Method directBufferCleanerClean;
-
 		static {
 			try {
 				Field f = Unsafe.class.getDeclaredField("theUnsafe");

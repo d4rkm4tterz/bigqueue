@@ -6,14 +6,13 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sun.misc.Unsafe;
 
 public class MappedPageImpl implements IMappedPage, Closeable {
-
-	private final static Logger logger = Logger.getLogger(MappedPageImpl.class);
-
+	private final static Logger logger = LoggerFactory.getLogger(MappedPageImpl.class);
 	private ThreadLocalByteBuffer threadLocalBuffer;
 	private volatile boolean dirty = false;
 	private volatile boolean closed = false;

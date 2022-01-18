@@ -15,7 +15,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple and thread-safe LRU cache implementation, 
@@ -31,7 +32,7 @@ import org.apache.log4j.Logger;
  */
 public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
 	
-	private final static Logger logger = Logger.getLogger(LRUCacheImpl.class);
+	private final static Logger logger = LoggerFactory.getLogger(LRUCacheImpl.class);
 	
 	public static final long DEFAULT_TTL = 10 * 1000; // milliseconds
 	
@@ -48,6 +49,15 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
 	public LRUCacheImpl() {
 		map = new HashMap<K, V>();
 		ttlMap = new HashMap<K, TTLValue>();
+	}
+	
+	/**
+	 * Shutdown the internal ExecutorService,
+	 * 
+	 * Call this only after you have closed your bigqueue instance.
+	 */
+	public static void CloseExecutorService() {
+		executorService.shutdown();
 	}
 
 	public void put(K key, V value, long ttlInMilliSeconds) {

@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.leansoft.bigqueue.cache.ILRUCache;
 import com.leansoft.bigqueue.cache.LRUCacheImpl;
@@ -32,7 +33,7 @@ import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
  */
 public class MappedPageFactoryImpl implements IMappedPageFactory {
 	
-	private final static Logger logger = Logger.getLogger(MappedPageFactoryImpl.class);
+	private final static Logger logger = LoggerFactory.getLogger(MappedPageFactoryImpl.class);
 	
 	private int pageSize;
 	private String pageDir;
@@ -232,7 +233,18 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
 		}
 	}
 
-	@Override
+    @Override
+    public void deletePagesBeforePageIndex(long pageIndex) throws IOException {
+        Set<Long> indexSet = this.getExistingBackFileIndexSet();
+        for (Long index : indexSet) {
+            if (index < pageIndex) {
+                this.deletePage(index);
+            }
+        }
+    }
+
+
+    @Override
 	public Set<Long> getExistingBackFileIndexSet() {
 		Set<Long> indexSet = new HashSet<Long>();
 		File[] pageFiles = this.pageDirFile.listFiles();
@@ -274,19 +286,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
 		if (beforeIndexSet.size() == 0) return -1L;
 		TreeSet<Long> sortedIndexSet = new TreeSet<Long>(beforeIndexSet);
 		Long largestIndex = sortedIndexSet.last();
-		if (largestIndex != Long.MAX_VALUE) { // no wrap, just return the largest
-			return largestIndex;
-		} else { // wrapped case
-			Long next = 0L;
-			while(sortedIndexSet.contains(next)) {
-				next++;
-			}
-			if (next == 0L) {
-				return Long.MAX_VALUE;
-			} else {
-				return --next;
-			}
-		}
+		return largestIndex;
 	}
 
 	/**

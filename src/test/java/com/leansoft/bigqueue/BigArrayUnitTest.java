@@ -6,12 +6,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.leansoft.bigqueue.BigArrayImpl;
 import com.leansoft.bigqueue.IBigArray;
+import org.junit.rules.TemporaryFolder;
 
 public class BigArrayUnitTest {
 	
@@ -269,14 +273,14 @@ public class BigArrayUnitTest {
 		}
 		
 		long realSize = bigArray.getBackFileSize();
-		long expectedSize = BigArrayImpl.INDEX_PAGE_SIZE * 3 + bigArray.getDataPageSize() * 6;
+		long expectedSize = BigArrayImpl.INDEX_PAGE_SIZE * 23 + bigArray.getDataPageSize() * 6;
 		
 		assertTrue(expectedSize == realSize);
 		
 		bigArray.removeBeforeIndex(loop / 2);
-		
+		TestUtil.sleepQuietly(500);
 		realSize = bigArray.getBackFileSize();
-		expectedSize = BigArrayImpl.INDEX_PAGE_SIZE * 2 + bigArray.getDataPageSize() * 4;
+		expectedSize = BigArrayImpl.INDEX_PAGE_SIZE * 12 + bigArray.getDataPageSize() * 4;
 		
 		assertTrue(expectedSize == realSize);
 		
@@ -305,22 +309,22 @@ public class BigArrayUnitTest {
 			bigArray.append(randomString.getBytes());
 		}
 		
-		bigArray.limitBackFileSize(BigArrayImpl.INDEX_PAGE_SIZE * 2 + bigArray.getDataPageSize() * 3);
-		assertTrue(bigArray.getBackFileSize() <= BigArrayImpl.INDEX_PAGE_SIZE * 2 + bigArray.getDataPageSize() * 3);
-		assertTrue(bigArray.getBackFileSize() > BigArrayImpl.INDEX_PAGE_SIZE + bigArray.getDataPageSize() * 2);
+		bigArray.limitBackFileSize(BigArrayImpl.INDEX_PAGE_SIZE * 12 + bigArray.getDataPageSize() * 3);
+		assertTrue(bigArray.getBackFileSize() <= BigArrayImpl.INDEX_PAGE_SIZE * 12 + bigArray.getDataPageSize() * 3);
+		assertTrue(bigArray.getBackFileSize() > BigArrayImpl.INDEX_PAGE_SIZE * 11 + bigArray.getDataPageSize() * 2);
 		long lastTailIndex = bigArray.getTailIndex();
 		assertTrue(lastTailIndex > 0);
 		assertTrue(bigArray.getHeadIndex() == loop + 1);
 		
-		bigArray.limitBackFileSize(BigArrayImpl.INDEX_PAGE_SIZE + bigArray.getDataPageSize() * 2);
-		assertTrue(bigArray.getBackFileSize() <= BigArrayImpl.INDEX_PAGE_SIZE + bigArray.getDataPageSize() * 2);
-		assertTrue(bigArray.getBackFileSize() > BigArrayImpl.INDEX_PAGE_SIZE + bigArray.getDataPageSize());
+		bigArray.limitBackFileSize(BigArrayImpl.INDEX_PAGE_SIZE * 8 + bigArray.getDataPageSize() * 2);
+		assertTrue(bigArray.getBackFileSize() <= BigArrayImpl.INDEX_PAGE_SIZE * 8 + bigArray.getDataPageSize() * 2);
+		assertTrue(bigArray.getBackFileSize() > BigArrayImpl.INDEX_PAGE_SIZE * 7 + bigArray.getDataPageSize());
 		assertTrue(bigArray.getTailIndex() > lastTailIndex);
 		lastTailIndex = bigArray.getTailIndex();
 		assertTrue(bigArray.getHeadIndex() == loop + 1);
 		
-		bigArray.limitBackFileSize(BigArrayImpl.INDEX_PAGE_SIZE + bigArray.getDataPageSize());
-		assertTrue(bigArray.getBackFileSize() == BigArrayImpl.INDEX_PAGE_SIZE + bigArray.getDataPageSize());
+		bigArray.limitBackFileSize(BigArrayImpl.INDEX_PAGE_SIZE * 4 + bigArray.getDataPageSize());
+		assertTrue(bigArray.getBackFileSize() == BigArrayImpl.INDEX_PAGE_SIZE * 3 + bigArray.getDataPageSize());
 		assertTrue(bigArray.getTailIndex() > lastTailIndex);
 		lastTailIndex = bigArray.getTailIndex();
 		assertTrue(bigArray.getHeadIndex() == loop + 1);
@@ -375,13 +379,65 @@ public class BigArrayUnitTest {
 		assertTrue(11 * 64 * 1024 * 1024 == bigArray.getBackFileSize());
 		
 		bigArray.removeBeforeIndex(1024 * 1024);
-		
+		TestUtil.sleepQuietly(500);
 		assertTrue(10 * 64 * 1024 * 1024 == bigArray.getBackFileSize());
 		
 		bigArray.removeBeforeIndex(1024 * 1024 * 2);
-		
+		TestUtil.sleepQuietly(500);
 		assertTrue(9 * 64 * 1024 * 1024 == bigArray.getBackFileSize());
 	}
+
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
+
+    @Test
+    public void testRemoveBeforeIndexDataCorruption() throws IOException, InterruptedException {
+        bigArray = new BigArrayImpl(tempDir.newFolder().getAbsolutePath(), "data_corruption", BigArrayImpl.DEFAULT_DATA_PAGE_SIZE);
+
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    bigArray.limitBackFileSize(500 * 1024 * 1024);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 100, 100, TimeUnit.MILLISECONDS);
+
+        final int msgSize = 4096;
+        final long msgCount = 2L * 1024L * 1024L * 1024L / msgSize;
+
+        System.out.println("msgCount: " + msgCount);
+        for (int i = 0; i < msgCount; ++i) {
+            byte[] bytes = new byte[msgSize];
+            for (int j = 0; j < msgSize; ++j) {
+                bytes[j] = 'a';
+            }
+            bigArray.append(bytes);
+        }
+
+        int count = 0;
+        for (long i = bigArray.getTailIndex(); i < bigArray.getHeadIndex(); ++i) {
+            byte[] bytes = null;
+            try {
+                bytes = bigArray.get(i);
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println(i + " is reset to " + bigArray.getTailIndex());
+                i = bigArray.getTailIndex();
+                continue; // reset
+            }
+            for (int j = 0; j < msgSize; ++j) {
+                assertEquals(bytes[j], 'a');
+            }
+            ++count;
+            if (i % 10000 == 0) {
+                Thread.yield();
+            }
+        }
+
+        System.out.println(count);
+    }
 	
 	@After
 	public void clean() throws IOException {

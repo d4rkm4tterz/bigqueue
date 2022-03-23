@@ -2,20 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.leansoft</groupId>
+  <groupId>io.github.d4rkm4tterz</groupId>
   <artifactId>bigqueue</artifactId>
-  <version>0.7.2-RC1-JDK11</version>
+  <version>0.7.2-RC</version>
   <packaging>jar</packaging>
 
     <name>bigqueue</name>
-    <url>https://github.com/bulldog2011/bigqueue</url>
-
     <description>Light, fast and persistent queue.</description>
-    <scm>
-        <connection>scm:git:git://github.com/bulldog2011/bigqueue.git</connection>
-        <developerConnection>scm:git:git@github.com:bulldog2011/bigqueue.git</developerConnection>
-        <url>https://github.com/bulldog2011/bigqueue</url>
-    </scm>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -24,6 +17,14 @@
         </license>
     </licenses>
     <developers>
+        <developer>
+            <id>d4rkm4tterz</id>
+            <name>d4rkm4tterz</name>
+            <url>https://github.com/d4rkm4tterz</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
         <developer>
             <id>51startup</id>
             <name>bulldog</name>
@@ -35,22 +36,10 @@
         </developer>
     </developers>
 
-    <distributionManagement>
-        <repository>
-            <id>github.release.repo</id>
-            <name>Release Repository</name>
-            <url>file:///dev/bulldog-repo/repo/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>github.snapshot.repo</id>
-            <name>Snapshot Repository</name>
-            <url>file:///dev/bulldog-repo/repo/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>11</maven.compiler.release>
     </properties>
 
     <dependencies>
@@ -71,19 +60,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.33</version>
+            <version>1.7.36</version>
         </dependency>
-
-  <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <maven.compiler.release>11</maven.compiler.release>
-  </properties>
   
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.6</version>
+            <version>1.7.36</version>
             <scope>test</scope>
         </dependency>
 
@@ -116,6 +99,14 @@
                 </configuration>
             </plugin>
             <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
@@ -123,21 +114,19 @@
                     <resources/>
                 </configuration>
             </plugin>
-            <!-- removed for now
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-source-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>attach-sources</id>-->
+<!--                        <phase>verify</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>jar</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.2</version>

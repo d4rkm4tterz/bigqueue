@@ -1,6 +1,7 @@
 Specification-Title: bigqueue
 Specification-Version: 0.1
 Specification-Vendor: leansoft
-Implementation-Version: 0.1
-Implementation-Vendor: leansoft
+Implementation-Version: 7.2
+Implementation-Vendor: io.github.d4rkm4tterz
 Implementation-Title: big, fast and persistent queue
+Manifest-Version: 2303202201

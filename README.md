@@ -9,6 +9,9 @@ The project is a fork of the original repo found under https://github.com/bulldo
 
 ## Version History
 
+#### 0.7.2 - *March 23, 2022*
+  * JDK11 compatibility release (JDK < 11 not supported anymore)
+
 #### 0.7.0 - *March 24, 2013* : [repository](https://github.com/bulldog2011/bulldog-repo/tree/master/repo/releases/com/leansoft/bigqueue/0.7.0)
   * Feature: support fanout queue semantics
   * Enhancement: make data file size configurable
